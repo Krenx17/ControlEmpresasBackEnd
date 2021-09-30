@@ -52,7 +52,7 @@ function deleteemployee(req, res){
 
 function allemployee(req, res){
     if (req.user.rol === 'company'){
-        Employee.find((err, employees)=>{
+        Employee.find({$or:[{company: req.user.sub}]}, (err, employees)=>{
             if (err) return res.status(500).send({mesaje:"Error en la petición"})
             if (employees) return res.status(200).send({employees})
         })
@@ -106,8 +106,41 @@ function findemployee(req, res){
 }
 
 function pdfemployee(req, res){
+    var pdf = require("pdfkit")
+    var fs = require("fs")
+    var myDoc = new pdf();
+    var params = req.body;
     if (req.user.rol === 'company'){
-        //
+        Employee.find({$or:[{company: req.user.sub}]}, (err, employees)=>{
+            if (err) return res.status(500).send({mesaje:"Error en la petición"})
+            if (employees){ 
+                //return res.status(200).send({employees})
+                myDoc.pipe(fs.createWriteStream("empleados.pdf"))
+                myDoc.font('Times-Italic', 12)
+                    .text("Empresa: "+req.user.company)
+                    .text("Teléfono: "+req.user.celphone)
+                    .text("Email: "+req.user.email)
+                    .moveDown()
+                myDoc.font('Times-Bold', 20)
+                    .text("Empleados",{
+                        underline: true,
+                        align: "center"
+                    })
+                employees.forEach(employee=>{
+                    myDoc.font('Times-Roman', 12)
+                        .moveDown()
+                        .text("ID: "+employee._id)
+                        .text("Nombre: "+employee.nombre)
+                        .text("Apellido: "+employee.apellido)
+                        .text("Puesto: "+employee.puesto)
+                        .text("Departamento: "+employee.departamento)
+                })
+                myDoc.end();
+                return res.status(200).send({mesaje: "PDF creado correctamente"})
+            }else{
+                return res.status(500).send({mesaje: "No existen empleados en esa empresa"})
+            }
+        })
     }else{
         return res.status(500).send({mesaje: 'No posees los permisos necesarios'})
     }
@@ -119,5 +152,6 @@ module.exports = {
     deleteemployee,
     allemployee,
     findemployeeid,
-    findemployee
+    findemployee,
+    pdfemployee
 }
