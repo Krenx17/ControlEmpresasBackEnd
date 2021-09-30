@@ -11,6 +11,6 @@ api.delete('/deleteemployee/:idEmployee', authentication.ensureAuth, employeeCon
 api.get('/allemployee', authentication.ensureAuth, employeeController.allemployee)
 api.get('/findemployeeid/:idEmployee', authentication.ensureAuth, employeeController.findemployeeid)
 api.get('/findemployee', authentication.ensureAuth, employeeController.findemployee)
-api.get('/pdf', authentication.ensureAuth, employeeController.pdfemployee)
+api.get('/pdfemployee', authentication.ensureAuth, employeeController.pdfemployee)
 
 module.exports = api
